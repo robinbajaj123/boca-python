@@ -51,7 +51,11 @@ if is_databricks:
     # Databricks approach: Use foreachBatch with display-friendly output
     def debug_and_send_to_kafka(batch_df, batch_id):
         print(f"\n=== Batch {batch_id} ===")
-        # Show data in notebook (works in Databricks)
+        
+        # Option 1: Use display() for rich interactive output (Databricks only)
+        # display(batch_df)
+        
+        # Option 2: Use show() for consistent output across environments
         batch_df.show(10, truncate=False)
         
         # Send to Kafka
