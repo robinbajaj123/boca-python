@@ -42,12 +42,23 @@ kafka_ready_df = kafka_ready_df \
     .select("key", "value")
 
 # ─────────────────────────────────────────────────────────────
-# 6. Stream directly to Kafka (no micro-batching needed)
+# 6. Print each micro-batch to console
+# ─────────────────────────────────────────────────────────────
+def debug_and_send_to_kafka(batch_df, batch_id):
+    print(f"\n--- Batch {batch_id} ---")
+    batch_df.show(truncate=False)
+
+    batch_df.write \
+        .format("kafka") \
+        .option("kafka.bootstrap.servers", "localhost:9092") \
+        .option("topic", "orders") \
+        .save()
+
+# ─────────────────────────────────────────────────────────────
+# 7. Stream using foreachBatch
 # ─────────────────────────────────────────────────────────────
 query = kafka_ready_df.writeStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", "localhost:9092") \
-    .option("topic", "orders") \
+    .foreachBatch(debug_and_send_to_kafka) \
     .option("checkpointLocation", "/tmp/spark-kafka-checkpoint") \
     .outputMode("append") \
     .start()
